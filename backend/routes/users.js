@@ -93,11 +93,6 @@ router.get("/auth", OTP, async function (req, res) {
   console.log(req.user);
   res.send({ message: "User signin successfully", user: req.user });
 });
-router.get("/:id", async function (req, res) {
-  const { id } = req.params;
-  const user = await User.findOne({ _id: id }).populate("order");
-  res.send(user);
-});
 
 router.get("/foods", async (req, res) => {
   const Food = await foods.find();
@@ -119,7 +114,11 @@ router.get("/order/:id", async (req, res) => {
   const item = await order.findOne({ User: id });
   res.json(item);
 });
-
+router.get("/:id", async function (req, res) {
+  const { id } = req.params;
+  const user = await User.findOne({ _id: id }).populate("order");
+  res.send(user);
+});
 router.post("/cart", async (req, res) => {
   const { User, foods } = req.body.item;
   try {
