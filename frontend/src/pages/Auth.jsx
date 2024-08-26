@@ -10,7 +10,7 @@ export const Auth = () => {
   const Navigate = useNavigate();
   async function handleSubmit() {
     const response = await axios.get(
-      "http://localhost:8000/users/auth?otp=" + otp
+      "https://urban-bites-4cua.onrender.com/users/auth?otp=" + otp
     );
     console.log(response.status);
     if (response.status == 200) {

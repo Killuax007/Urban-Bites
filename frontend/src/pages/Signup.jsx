@@ -30,7 +30,7 @@ export const Signup = () => {
     e.preventDefault();
     if (window.navigator.onLine === true) {
       const response = await axios.post(
-        "http://localhost:8000/users/signup",
+        "https://urban-bites-4cua.onrender.com/users/signup",
         data
       );
       const userId = response.data.response._id;

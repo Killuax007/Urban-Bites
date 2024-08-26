@@ -5,25 +5,34 @@ import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 
 export const fetchUser = async (id) => {
-  const res = await axios.get("http://localhost:8000/users/" + id);
+  const res = await axios.get(
+    "https://urban-bites-4cua.onrender.com/users/" + id
+  );
   console.log(res.data);
 
   return res.data;
 };
 export const foodItems = async () => {
-  const res = await axios.get("http://localhost:8000/users/foods/");
+  const res = await axios.get(
+    "https://urban-bites-4cua.onrender.com/users/foods/"
+  );
   return res.data;
 };
 export const foodItemsById = async (id) => {
-  const res = await axios.get("http://localhost:8000/users/foods/" + id);
+  const res = await axios.get(
+    "https://urban-bites-4cua.onrender.com/users/foods/" + id
+  );
   return res.data;
 };
 
 export const addToCart = async (item) => {
   try {
-    const response = await axios.post(`http://localhost:8000/users/cart`, {
-      item,
-    });
+    const response = await axios.post(
+      `https://urban-bites-4cua.onrender.com/users/cart`,
+      {
+        item,
+      }
+    );
     toast.success("item added to cart successfully");
     return response.data;
   } catch (error) {
@@ -33,23 +42,35 @@ export const addToCart = async (item) => {
   // console.log(response);
 };
 export const addAddress = async (item) => {
-  const response = await axios.post(`http://localhost:8000/users/address`, {
-    item,
-  });
-  toast.success("Address added successfully");
-  return response.data;
+  try {
+    const response = await axios.post(
+      `https://urban-bites-4cua.onrender.com/users/address`,
+      {
+        item,
+      }
+    );
+    toast.success("Address added successfully");
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.log(error.message);
+  }
 
   // console.log(response);
 };
 export const fetchItemsFromCart = async (id) => {
-  const res = await axios.get("http://localhost:8000/users/carts/" + id);
+  const res = await axios.get(
+    "https://urban-bites-4cua.onrender.com/users/carts/" + id
+  );
   return res.data;
 };
 export function useCart(id) {
   const [cart, setCart] = useState([]);
   useEffect(() => {
     async function getData(id) {
-      const res = await axios.get("http://localhost:8000/users/carts/" + id);
+      const res = await axios.get(
+        "https://urban-bites-4cua.onrender.com/users/carts/" + id
+      );
       // console.log(res.data);
       setCart(res.data);
     }
@@ -57,23 +78,29 @@ export function useCart(id) {
   }, []);
   return cart;
 }
-export function useOrder(id) {
-  const [order, setOrder] = useState();
-  useEffect(() => {
-    async function getData(id) {
-      const res = await axios.get("http://localhost:8000/users/order/" + id);
-      console.log(res.data);
-      setOrder(res.data);
-    }
-    getData(id);
-  }, []);
-  return order;
-}
+// export function useOrder(id) {
+//   const [order, setOrder] = useState();
+//   useEffect(() => {
+//     async function getData(id) {
+//       const res = await axios.get(
+//         "https://urban-bites-4cua.onrender.com/users/order/" + id
+//       );
+//       console.log(res.data);
+//       setOrder(res.data);
+//     }
+//     getData(id);
+//   }, []);
+//   return order;
+// }
 export const deleteItem = async (_id) => {
-  await axios.delete("http://localhost:8000/users/carts/" + _id);
+  await axios.delete(
+    "https://urban-bites-4cua.onrender.com/users/carts/" + _id
+  );
 };
 export const getId = async (id) => {
-  const res = await axios.get("http://localhost:8000/users/order/" + id);
+  const res = await axios.get(
+    "https://urban-bites-4cua.onrender.com/users/order/" + id
+  );
   const result = await res.data;
   return result;
 };

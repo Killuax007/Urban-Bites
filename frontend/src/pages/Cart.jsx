@@ -2,12 +2,11 @@
 import { Link } from "react-router-dom";
 import Footer from "../components/footer";
 import Navbar2 from "../components/navbar2";
-import { useCart, deleteItem, useOrder } from "./Api";
+import { useCart, deleteItem } from "./Api";
 export default function Cart() {
   const id = localStorage.getItem("userId");
   const data = useCart(id);
-  const order = useOrder(id);
-  console.log(order);
+  console.log(data);
 
   let sum = 0;
   data.forEach((element) => {
@@ -61,7 +60,7 @@ export default function Cart() {
                               className="flex hover:text-rose-700"
                               onClick={(e) => {
                                 deleteItem(item._id);
-                                autoLoad();
+                                // autoLoad();
                               }}
                             >
                               <i class="fa fa-trash" aria-hidden="true"></i>

@@ -36,6 +36,7 @@ export default function user() {
   return (
     <div>
       <Navbar2 />
+
       <div className="mx-auto   bg-[url('./images/bg.jpg')] max-w-full px-4 sm:px-6 lg:px-8">
         <div className=" font-Cottage px-4 py-6 sm:px-6">
           <h1 className="text-2xl my-5 font-bold tracking-tight text-yellow-400">
