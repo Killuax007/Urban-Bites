@@ -13,15 +13,11 @@ export const fetchUser = async (id) => {
   return res.data;
 };
 export const foodItems = async () => {
-  const res = await axios.get(
-    "https://urban-bites-4cua.onrender.com/users/foods/"
-  );
+  const res = await axios.get("http://localhost:8000/foods/");
   return res.data;
 };
 export const foodItemsById = async (id) => {
-  const res = await axios.get(
-    "https://urban-bites-4cua.onrender.com/users/foods/" + id
-  );
+  const res = await axios.get("http://localhost:8000/foods/" + id);
   return res.data;
 };
 

@@ -2,6 +2,9 @@ const speakeasy = require("speakeasy");
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 dotenv.config({ path: "./.env" });
+const bycrypt = require("bcrypt");
+
+const saltRounds = 12;
 const secret = speakeasy.generateSecret({ length: 2 });
 exports.code = speakeasy.totp({
   secret: secret.base32,
@@ -27,4 +30,13 @@ exports.sendMail = async function ({ to, subject, text, html }) {
     html,
   });
   return info;
+};
+
+exports.hashPassword = function (password) {
+  const salt = bycrypt.genSaltSync(saltRounds);
+  return bycrypt.hashSync(password, salt);
+};
+
+exports.compareHashed = function (plain, hashed) {
+  return bycrypt.compareSync(plain, hashed);
 };

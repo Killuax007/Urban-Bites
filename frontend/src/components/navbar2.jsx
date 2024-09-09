@@ -7,7 +7,6 @@ export default function Navbar2() {
   const navigate = useNavigate();
   function Logout() {
     toast.error("user logged out successfully..");
-
     localStorage.removeItem("userId");
     localStorage.removeItem("token");
     navigate("/");
@@ -31,7 +30,7 @@ export default function Navbar2() {
           {/* <Navbar.Toggle /> */}
           <Navbar.Collapse className="font-medium   p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
             <Link
-              to={"/dashboard"}
+              to={"/"}
               className="font-Whimster text-2xl  dark:text-yellow-400 hover:text-white md:hover:text-white   rounded dark:hover:bg-gray-700 md:dark:hover:bg-transparent"
             >
               Home{" "}

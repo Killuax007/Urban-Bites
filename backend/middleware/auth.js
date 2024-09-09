@@ -1,4 +1,3 @@
-const { User } = require("../db/users");
 const JWT = require("jsonwebtoken");
 const JWT_KEY = process.env.JWT_KEY;
 
@@ -11,12 +10,10 @@ const authMiddleware = async (req, res, next) => {
   }
   try {
     const response = JWT.verify(extractedToken, JWT_KEY);
-    console.log(response);
     req.userId = response.UserId;
-    console.log(req.userId);
     next();
   } catch (error) {
     res.status(403).send({ message: error.message });
   }
 };
-module.exports = { authMiddleware };
+module.exports = authMiddleware;

@@ -1,36 +1,39 @@
 // import React from 'react'
-import { useState } from "react";
+/* eslint-disable  */
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar2 from "../components/navbar2";
 import Footer from "../components/footer";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { useUserContext } from "../store/contexts/userContext";
 export const Signin = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm();
+  const { getUser } = useUserContext();
   const Navigate = useNavigate();
-  const [data, setData] = useState({
-    email: "",
-    password: "",
-  });
-  const handleChange = (event) => {
-    const { value, name } = event.target;
-    setData({ ...data, [name]: value });
-  };
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const response = await axios.post(
-      "https://urban-bites-4cua.onrender.com/users/signin",
-      data
-    );
-    localStorage.setItem("userId", response.data.id);
+  const onSubmit = async (data) => {
+    const response = await axios.post("http://localhost:8000/user/signin", {
+      email: data.email,
+      password: data.password,
+    });
     localStorage.setItem("token", response.data.token);
-    if (response.status == 200) {
+    const token = localStorage.getItem("token");
+
+    if (response.status === 200 && token) {
+      getUser(token);
       toast.success("User signed in successfully");
       Navigate("/dashboard");
     } else {
-      toast.error(response.data.message);
+      toast.error("Something went wrong...");
     }
-  }
+    reset();
+  };
+
   const passwordToggle = () => {
     const toggle = document.getElementById("password");
     if (toggle.type === "password") {
@@ -43,7 +46,6 @@ export const Signin = () => {
   return (
     <div>
       <Navbar2 />
-
       <div className=" bg-[url('./images/bg.jpg')]  flex min-h-full flex-1 flex-col justify-center px-6 py-5 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm mb-10">
           <h2 className="mt-10 text-center text-4xl font-bold font-Cottage leading-9 tracking-tight text-yellow-400 ">
@@ -52,7 +54,11 @@ export const Signin = () => {
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm mb-7">
-          <form noValidate className="space-y-6" onSubmit={handleSubmit}>
+          <form
+            noValidate
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-6"
+          >
             <div>
               <label
                 htmlFor="email"
@@ -65,11 +71,22 @@ export const Signin = () => {
                   id="email"
                   name="email"
                   type="email"
-                  value={data.email}
-                  onChange={handleChange}
-                  className=" font-Cottage block w-full font-semibold rounded-md border-0 pl-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset  sm:text-sm sm:leading-6"
+                  {...register("email", {
+                    required: "Invalid email details....",
+                    pattern: {
+                      value: /\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b/gi,
+                      message: "Invalid email address",
+                    },
+                  })}
+                  placeholder="Email.."
+                  className=" font-Cottage block w-full font-semibold rounded-md border-0 pl-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-stone-600 focus:ring-2 focus:ring-inset  sm:text-sm sm:leading-6"
                 />
               </div>
+            </div>
+            <div>
+              {errors.email && (
+                <div className="text-rose-600">{errors.email.message}</div>
+              )}
             </div>
 
             <div>
@@ -94,15 +111,18 @@ export const Signin = () => {
                   id="password"
                   type="password"
                   name="password"
-                  value={data.password}
-                  onChange={handleChange}
-                  className="block font-Cottage font-bold  w-full rounded-md border-0 py-1.5 pl-2 text-black shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset  sm:text-sm sm:leading-6"
+                  {...register("password")}
+                  placeholder="password..."
+                  className="block font-Cottage font-bold  w-full rounded-md border-0 py-1.5 pl-2 text-black shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-stone-600 focus:ring-2 focus:ring-inset  sm:text-sm sm:leading-6"
                 />
                 <span
                   className=" absolute right-1 mt-1 mr-1 text-white"
                   onClick={passwordToggle}
                 >
-                  <i className="fa fa-eye text-black " aria-hidden="true" />
+                  <i
+                    className="fa fa-eye text-black cursor-pointer "
+                    aria-hidden="true"
+                  />
                 </span>
               </div>
             </div>

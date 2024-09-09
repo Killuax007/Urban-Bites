@@ -1,34 +1,25 @@
 const { Router } = require("express");
-const { User, otp, foods, cart, order } = require("../db/users");
-const zod = require("zod");
+const { User, otp, cart, order } = require("../db/users");
 const JWT = require("jsonwebtoken");
 const JWT_KEY = process.env.JWT_KEY;
 const router = Router();
 const auth = require("../middleware/auth");
 const OTP = require("../middleware/otp");
-const { sendMail } = require("../services");
+const authMiddleware = require("../middleware/auth");
+const { sendMail, hashPassword, compareHashed } = require("../services");
 const { code } = require("../services");
 
-const signUpSchema = zod.object({
-  firstname: zod.string(),
-  email: zod.string().email(),
-  password: zod.string(),
-});
-const signinSchema = zod.object({
-  email: zod.string().email(),
-  password: zod.string(),
-});
 router.get("/", function (req, res) {
   res.send("Welcome you reached user route");
 });
 router.post("/signup", async function (req, res) {
-  const { firstname, email, password } = req.body;
-  const { success } = signUpSchema.safeParse({ firstname, email, password });
+  console.log(firstname + " " + email + " " + password);
   const userExist = await User.findOne({ email: email });
-  if (!success && userExist) {
-    res.status(500).send({ message: "Invalid credentials..." });
+  if (userExist) {
+    res.status(500).send({ message: "User Already exists..." });
   } else {
     try {
+      password = hashPassword(password);
       const refOtp = await otp.create({ otp: code });
       const response = await User.create({
         firstname,
@@ -62,53 +53,47 @@ router.post("/signup", async function (req, res) {
         html,
       });
       res.send({
-        response,
         message: "User signup successfully",
         token: token,
       });
     } catch (error) {
-      console.log(error.message);
-      res.status(500).send("Check your network connection..");
+      res.status(503).send("Check your network connection..");
     }
   }
 });
+router.get("/auth", OTP, async function (req, res) {
+  console.log(req.user);
+  res.send({ message: "User created successfully", user: req.user });
+});
 router.post("/signin", async function (req, res) {
-  const { email, password } = req.body;
-  const { success } = signinSchema.safeParse({ email, password });
+  let { email, password } = req.body;
   const userExist = await User.findOne({ email: email });
-  const token = JWT.sign({ UserId: userExist._id }, JWT_KEY);
 
-  if (success && userExist && userExist.password == password) {
-    res.status(200).send({
-      message: "User logged in successfully...",
-      token: token,
-      id: userExist._id,
-    });
+  if (userExist) {
+    if (compareHashed(password, userExist.password)) {
+      const token = JWT.sign({ UserId: userExist._id }, JWT_KEY);
+      res.status(200).send({
+        message: "User logged in successfully...",
+        token: token,
+      });
+    } else {
+      res.status(401).send("Wrong  password");
+    }
   } else {
-    res.status(500).send({ message: "Invalid credentials....." });
+    res.status(401).send("Invalid credentials");
   }
 });
 
-router.get("/auth", OTP, async function (req, res) {
-  console.log(req.user);
-  res.send({ message: "User signin successfully", user: req.user });
+router.get("/authlogin", authMiddleware, async function (req, res) {
+  res.send({ message: "User verified successfully", userId: req.userId });
 });
 
-router.get("/foods", async (req, res) => {
-  const Food = await foods.find();
-  res.send(Food);
-});
 router.post("/address", async (req, res) => {
   const user = await order.create(req.body.item);
   await User.findByIdAndUpdate({ _id: user.User }, { order: user._id });
   res.send(user);
 });
 
-router.get("/foods/:id", async (req, res) => {
-  const { id } = req.params;
-  const Food = await foods.findOne({ id: Number(id) });
-  res.send(Food);
-});
 router.get("/order/:id", async (req, res) => {
   const { id } = req.params;
   const item = await order.findOne({ User: id });
@@ -140,3 +125,47 @@ router.delete("/carts/:id", async (req, res) => {
   res.json(result);
 });
 module.exports = router;
+exports.resetPasswordRequest = async (req, res) => {
+  const email = req.body.email;
+  const user = await User.findOne({ email: email });
+  if (user) {
+    const token = crypto.randomBytes(48).toString("hex");
+    user.resetPasswordToken = token;
+    await user.save();
+
+    // Also set token in email
+    const resetPageLink =
+      "http://localhost:5173/reset-password?token=" + token + "&email=" + email;
+    const subject = "Reset  your Shopeasy password ";
+    const html = `<a href="https://ibb.co/VQHrH5R"><img src="https://i.ibb.co/0FB8BvT/Logo-for-e-Commerce-website-shopeasy-1.jpg" alt="Logo-for-e-Commerce-website-shopeasy-1" border="0" style="height:60px; border-radius: 50%;"></a>
+    <h2>Hi ${email} user....</h2>
+    <h3>We got a request to reset your Shopeasy account password</h3>
+    <button
+      style="
+      background-color: #36A9AE;
+      color: #FFFFFF;
+  background-image: linear-gradient(#37ADB2, #329CA0);
+  border: 1px solid #2A8387;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: -apple-system,Helvetica Neue,Helvetica,Arial;
+  font-size: 17px;
+  line-height: 100%;
+  padding: 11px 15px 12px;
+  text-align: center;
+      "
+    >
+    <a href=${resetPageLink} style="color: #FFFFFF;">Reset password</a> 
+    </button>
+    <p>if you ignore this message your password will not be changed......</p>`;
+
+    if (email) {
+      const response = await sendMail({ to: email, subject, html });
+      res.json(response);
+    } else {
+      res.sendStatus(400);
+    }
+  } else {
+    res.sendStatus(400);
+  }
+};

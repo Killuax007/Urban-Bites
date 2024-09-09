@@ -4,16 +4,19 @@ import axios from "axios";
 import Navbar2 from "../components/navbar2";
 import Footer from "../components/footer";
 import { toast } from "react-toastify";
+import { useUserContext } from "../store/contexts/userContext";
 
 export const Auth = () => {
   const [otp, setOtp] = React.useState("");
   const Navigate = useNavigate();
+  const { getUser } = useUserContext();
   async function handleSubmit() {
     const response = await axios.get(
-      "https://urban-bites-4cua.onrender.com/users/auth?otp=" + otp
+      "http://localhost:8000/user/auth?otp=" + otp
     );
-    console.log(response.status);
-    if (response.status == 200) {
+    const token = localStorage.getItem("token");
+    if (response.status == 200 && token) {
+      getUser(token);
       toast.success("Sign-up successfully");
 
       Navigate("/dashboard");
